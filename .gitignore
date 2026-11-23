@@ -1,0 +1,23 @@
+# Build output
+bin/
+obj/
+*.ispac
+
+# User / IDE state
+*.user
+*.suo
+.vs/
+
+# Local backups and generated packages
+backup/
+tools/package_generator/output/
+*.raw.dtsx
+
+# Validation / run outputs (contain data)
+validation/out_*
+*.log
+*.csv
+
+# Never commit credentials
+*.env
+*.pfx

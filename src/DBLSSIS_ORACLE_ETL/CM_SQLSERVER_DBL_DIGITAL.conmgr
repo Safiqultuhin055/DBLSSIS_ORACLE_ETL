@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<DTS:ConnectionManager xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:ObjectName="CM_SQLSERVER_DBL_DIGITAL"
+  DTS:DTSID="{7DEA3E2C-2990-497F-96D4-E32EB23613EC}"
+  DTS:CreationName="OLEDB">
+  <DTS:ObjectData>
+    <DTS:ConnectionManager
+      DTS:ConnectRetryCount="1"
+      DTS:ConnectRetryInterval="5"
+      DTS:ConnectionString="Data Source=SQLSERVER_HOST;User ID=SQL_LOGIN;Initial Catalog=DBL_DIGITAL;Provider=SQLNCLI11.1;Persist Security Info=True;Application Name=SSIS-DBLSSIS_ORACLE_ETL-{7DEA3E2C-2990-497F-96D4-E32EB23613EC}SQLSERVER_HOST.DBL_DIGITAL.sa;Auto Translate=False;">
+    </DTS:ConnectionManager>
+  </DTS:ObjectData>
+</DTS:ConnectionManager>

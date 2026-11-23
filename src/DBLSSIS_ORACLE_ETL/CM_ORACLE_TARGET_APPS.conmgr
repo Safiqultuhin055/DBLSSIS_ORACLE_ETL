@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<DTS:ConnectionManager xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:ObjectName="CM_ORACLE_TARGET_APPS"
+  DTS:DTSID="{045001BE-1809-47F1-81D1-80CC395F6877}"
+  DTS:CreationName="OLEDB">
+  <DTS:ObjectData>
+    <DTS:ConnectionManager
+      DTS:ConnectRetryCount="1"
+      DTS:ConnectRetryInterval="5"
+      DTS:ConnectionString="Data Source=ORACLE_HOST:ORACLE_PORT/ORACLE_SERVICE;User ID=ORACLE_LOGIN;Provider=OraOLEDB.Oracle.1;Persist Security Info=True;">
+    </DTS:ConnectionManager>
+  </DTS:ObjectData>
+</DTS:ConnectionManager>
