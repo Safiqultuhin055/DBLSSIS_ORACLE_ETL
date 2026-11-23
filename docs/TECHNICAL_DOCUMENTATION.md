@@ -7,7 +7,7 @@
 | Data flow | SQL Server `DBL_DIGITAL.dbo.ETL_Batch_SQL_STG` → Oracle `APPS.ETL_BATCH_SQL_STG` |
 | Schedule | SQL Server Agent, every 30 minutes, 24×7 |
 | Environment | DEV (deployed to SSISDB, folder `DBL_ETL`, environment `DEV`) |
-| Document version | 1.0 (2026-11-23) |
+| Document version | 1.1 (2026-11-23) |
 | Status | Deployed and scheduled on DEV. First scheduled runs are pending verification. |
 
 > **Note on sanitization.** This repository is public. Server addresses, instance names, the Oracle service name and login names have been replaced with placeholder tokens (see [§17](#17-sanitization-tokens)). No credentials of any kind are stored in this repository.
@@ -339,8 +339,30 @@ EXEC msdb.dbo.sp_start_job @job_name = N'DBL_ETL_BATCH_SQL_STG_30MIN';
 
 ## 12. Monitoring and operations
 
-### 12.1 Monitoring script
-Run `deployment/monitor_etl_job.sql` in SSMS on the SSIS server. It is read-only. `@hours` sets the look-back period (default 24).
+### 12.1 Monitoring script and procedure
+Two equivalent, read-only options return the same five result sets:
+
+| Option | How to use |
+|---|---|
+| Ad hoc script `deployment/monitor_etl_job.sql` | Open it in SSMS on the SSIS server and execute it. Change `@hours` to set the look-back period (default 24). |
+| Stored procedure `dbo.usp_Monitor_ETL_Batch_SQL_STG` (`deployment/usp_Monitor_ETL_Batch_SQL_STG.sql`) | Create it once in `DBL_DIGITAL` (`CREATE OR ALTER`), then run `EXEC dbo.usp_Monitor_ETL_Batch_SQL_STG;` |
+
+Procedure parameters (all optional):
+
+| Parameter | Default | Meaning |
+|---|---|---|
+| `@job_name` | `DBL_ETL_BATCH_SQL_STG_30MIN` | Agent job to report on |
+| `@hours` | `24` | Look-back window for job and SSIS runs |
+| `@folder_name` / `@project_name` / `@package_name` | `DBL_ETL` / `DBLSSIS_ORACLE_ETL` / `ETL_BATCH_SQL_STG.dtsx` | SSISDB package to report on |
+| `@source_days` | `7` | Days shown in the source daily count |
+
+```sql
+EXEC dbo.usp_Monitor_ETL_Batch_SQL_STG;                          -- last 24 hours
+EXEC dbo.usp_Monitor_ETL_Batch_SQL_STG @hours = 72;              -- last 3 days
+EXEC dbo.usp_Monitor_ETL_Batch_SQL_STG @hours = 6, @source_days = 2;
+```
+
+The caller needs read access to `msdb` job tables, to the `SSISDB` catalog views, and to `DBL_DIGITAL.dbo.ETL_Batch_SQL_STG`. The row-count parser guards `SUBSTRING` with `CASE`, because SQL Server can evaluate the expression before the `LIKE` filter and raise "Invalid length parameter" on other messages.
 
 | Result set | Shows |
 |---|---|
@@ -456,7 +478,8 @@ The committed `src/.../ETL_BATCH_SQL_STG.dtsx` is the **Visual Studio-saved** ve
 ├── deployment/
 │   ├── create_agent_job_30min.sql      creates the Agent job (SSIS step + schedule)
 │   ├── add_proc_step_to_job.sql        inserts the procedure as step 1
-│   └── monitor_etl_job.sql             read-only monitoring
+│   ├── monitor_etl_job.sql             read-only monitoring (ad hoc script)
+│   └── usp_Monitor_ETL_Batch_SQL_STG.sql  same monitoring as a stored procedure
 ├── validation/                         read-only profiling, readiness and reconciliation scripts
 └── tools/package_generator/            programmatic package builder (C# + PowerShell)
 ```
@@ -487,3 +510,4 @@ Replace these tokens with real values only in a private working copy. Never comm
 | Version | Date | Change |
 |---|---|---|
 | 1.0 | 2026-11-23 | Initial release: package built and validated, initial and incremental loads reconciled, deployed to SSISDB (DEV), 30-minute Agent job with the source refresh step, monitoring script |
+| 1.1 | 2026-11-23 | Added monitoring procedure `dbo.usp_Monitor_ETL_Batch_SQL_STG`. Hardened row-count parsing in the monitoring script. |

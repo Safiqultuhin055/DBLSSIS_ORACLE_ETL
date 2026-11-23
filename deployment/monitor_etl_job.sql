@@ -83,15 +83,22 @@ WITH e AS (
       AND project_name = N'DBLSSIS_ORACLE_ETL'
       AND package_name = N'ETL_BATCH_SQL_STG.dtsx'
       AND start_time  >= @since
-), w AS (   -- '"<component>" wrote N rows.' information messages
-    SELECT m.operation_id AS execution_id,
-           SUBSTRING(m.message, 2, CHARINDEX('"', m.message, 2) - 2) AS component,
-           TRY_CAST(SUBSTRING(m.message, CHARINDEX(' wrote ', m.message) + 7,
-                     CHARINDEX(' row', m.message, CHARINDEX(' wrote ', m.message))
-                     - CHARINDEX(' wrote ', m.message) - 7) AS int) AS rows_written
+), msg AS (   -- only '"<component>" wrote N rows.' information messages
+    SELECT m.operation_id AS execution_id, m.message
     FROM SSISDB.catalog.event_messages m
     WHERE m.operation_id IN (SELECT execution_id FROM e)
       AND m.message LIKE N'"%" wrote % row%'
+), w AS (
+    -- CASE guards: SQL Server may evaluate SUBSTRING before the LIKE filter,
+    -- which could raise "Invalid length parameter" on other messages.
+    SELECT execution_id,
+           CASE WHEN message LIKE N'"%" wrote % row%'
+                THEN SUBSTRING(message, 2, CHARINDEX('"', message, 2) - 2) END AS component,
+           CASE WHEN message LIKE N'"%" wrote % row%'
+                THEN TRY_CAST(SUBSTRING(message, CHARINDEX(' wrote ', message) + 7,
+                         CHARINDEX(' row', message, CHARINDEX(' wrote ', message))
+                         - CHARINDEX(' wrote ', message) - 7) AS int) END AS rows_written
+    FROM msg
 )
 SELECT  e.execution_id,
         CONVERT(varchar(19), e.start_t, 120)  AS ssis_start,

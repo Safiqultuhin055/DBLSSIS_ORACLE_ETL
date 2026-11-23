@@ -34,7 +34,7 @@ Any failed check stops the run with a diagnostic error. Re-running is safe: only
 | Path | Content |
 |---|---|
 | `src/DBLSSIS_ORACLE_ETL/` | Visual Studio SSIS project and package |
-| `deployment/` | Agent job creation, procedure step, monitoring query |
+| `deployment/` | Agent job creation, procedure step, monitoring script and monitoring procedure |
 | `validation/` | Read-only profiling, readiness and 47-metric reconciliation scripts |
 | `tools/package_generator/` | Programmatic package builder (SSIS object model) |
 
@@ -44,7 +44,7 @@ Any failed check stops the run with a diagnostic error. Re-running is safe: only
 2. Build in Visual Studio 2022 with the SSIS Projects extension and deploy the `.ispac` to SSISDB.
 3. Configure environment `DEV` with sensitive password variables ([§9](docs/TECHNICAL_DOCUMENTATION.md#9-deployment-ssisdb)).
 4. Run `deployment/create_agent_job_30min.sql`, then `deployment/add_proc_step_to_job.sql`.
-5. Monitor with `deployment/monitor_etl_job.sql`.
+5. Monitor with `deployment/monitor_etl_job.sql`, or create `dbo.usp_Monitor_ETL_Batch_SQL_STG` once and run `EXEC dbo.usp_Monitor_ETL_Batch_SQL_STG;`.
 
 ## Security
 
